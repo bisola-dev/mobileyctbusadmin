@@ -104,34 +104,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #000;
         }
 
-        /* Table styles */
-        table {
+       /* Table styles */
+table {
     width: 100%; /* Adjusted width to fill the container */
     border-collapse: collapse;
     border: 1px solid #ccc;
     margin-bottom: 20px; /* Add space between form and table */
+    margin-left: auto; /* Align the table to the right */
+    margin-right: auto; /* Align the table to the left */
 }
 
 th, td {
     padding: 8px;
     border: 1px solid #ccc;
     text-align: left;
-    max-width: 150px; /* Limit the maximum width of table cells */
-    overflow: hidden; /* Hide overflowing content */
-    text-overflow: ellipsis; /* Add ellipsis for overflowed text */
-    white-space: nowrap; /* Prevent text wrapping */
 }
 
 th {
     background-color: #008000;
     color: #fff;
 }
-        /* New table styles */
+
+/* New table styles */
 .wallet-table {
     width: 30%; /* Adjusted width */
     border-collapse: collapse;
     border: 1px solid #ccc;
     margin-top: 20px; /* Add space between previous table and new table */
+    margin-left: auto; /* Align the table to the right */
+    margin-right: auto; /* Align the table to the left */
 }
 
 .wallet-table th, .wallet-table td {
@@ -145,6 +146,7 @@ th {
     background-color: #008000;
     color: #fff;
 }
+
 
 
 
@@ -177,7 +179,9 @@ th {
 
     <?php 
 if (!empty($walletQuery)) {
+    // Check if there are rows in the result
     if (sqlsrv_has_rows($walletResult)) {
+        // Display table with records
         echo '<div style="overflow-x:auto;">';
         echo '<table id="myTable" class="display">';
         echo '<thead>';
@@ -187,88 +191,89 @@ if (!empty($walletQuery)) {
         echo '<th>Booking Date</th>';
         echo '<th>Route Description</th>';
         echo '<th>Amount</th>';
+        echo '<th>Staff Name</th>';
         echo '<th>View Booking</th>';
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
 
-        while ($row = sqlsrv_fetch_array($walletResult, SQLSRV_FETCH_ASSOC)) {
-            echo '<tr>';
-            echo '<td>' . $row['staffid'] . '</td>';
-            echo '<td>' . $row['ticket_type'] . ' ' . $row['seat_no'] . '</td>';
-            echo '<td>' . $row['booking_date']->format('Y-m-d') . '</td>';
-            echo '<td>';
-            
-            $rid = $row['rid'];
-            $query2 = "SELECT description, amount FROM [Bus_Booking].[dbo].[Routes] WHERE rid = ?";
-            $params2 = array($rid);
-            $result2 = sqlsrv_query($conn, $query2, $params2);
+        // Prepare and execute SQL query to fetch staff details
+        $staffQuery = "SELECT SURNAME, FIRSTNAME, MIDDLENAME FROM [Bus_Booking].[dbo].[stafflist] WHERE STAFFNUMBER = ?";
+        $staffParams = array($staffy);
+        $staffResult = sqlsrv_query($conn, $staffQuery, $staffParams);
 
-            if ($result2 !== false && sqlsrv_has_rows($result2)) {
-                while ($row2 = sqlsrv_fetch_array($result2, SQLSRV_FETCH_ASSOC)) {
-                    $description = $row2['description'];
-                    $amount = $row2['amount'];
-                    echo $description;
-                }
-            } else {
-                echo "No route description found for RID: $rid";
-            }
-            
-            echo '</td>';
-            echo '<td>' . $amount . '</td>';
+        if ($staffResult !== false) {
+            // Fetch staff details
+            $staffRow = sqlsrv_fetch_array($staffResult, SQLSRV_FETCH_ASSOC);
+            $surname = $staffRow['SURNAME'];
+            $firstname = $staffRow['FIRSTNAME'];
+            $middlename = $staffRow['MIDDLENAME'];
+            $stafffname = $surname . ' ' . $firstname;
+            $staffname = $surname . ' ' . $firstname . ' ' . $middlename;
 
-            // SQL query to fetch data
-            $query = "SELECT SURNAME, FIRSTNAME, MIDDLENAME FROM [Bus_Booking].[dbo].[stafflist] WHERE STAFFNUMBER = ?";
-            $params = array($staffy);
-            $rezn = sqlsrv_query($conn, $query, $params);
+            while ($row = sqlsrv_fetch_array($walletResult, SQLSRV_FETCH_ASSOC)) {
+                // Display each row of data
+                echo '<tr>';
+                echo '<td>' . $row['staffid'] . '</td>';
+                echo '<td>' . $row['ticket_type'] . ' ' . $row['seat_no'] . '</td>';
+                echo '<td>' . $row['booking_date']->format('Y-m-d') . '</td>';
+                echo '<td>';
+                
+                $rid = $row['rid'];
+                $query2 = "SELECT description, amount FROM [Bus_Booking].[dbo].[Routes] WHERE rid = ?";
+                $params2 = array($rid);
+                $result2 = sqlsrv_query($conn, $query2, $params2);
 
-            // Check if query was successful
-            if ($rezn !== false) {
-                // Check if any rows were returned
-                if (sqlsrv_has_rows($rezn)) {
-                    // Fetch data
-                    $staff_row = sqlsrv_fetch_array($rezn, SQLSRV_FETCH_ASSOC);
-                    // Extract values from the fetched row
-                    $surname = $staff_row['SURNAME'];
-                    $firstname = $staff_row['FIRSTNAME'];
-                    $middlename = $staff_row['MIDDLENAME'];
-
-                    // Combine names
-                    $staffname = $surname . ' ' . $firstname . ' ' . $middlename;
+                if ($result2 !== false && sqlsrv_has_rows($result2)) {
+                    while ($row2 = sqlsrv_fetch_array($result2, SQLSRV_FETCH_ASSOC)) {
+                        $description = $row2['description'];
+                        $amount = $row2['amount'];
+                        echo $description;
+                    }
                 } else {
-                    echo "No record found for staff number: " . $row['staffid'];
+                    echo "No route description found for RID: $rid";
                 }
-            } else {
-                // Handle query execution error
-                echo "Error executing query: " . sqlsrv_errors();
-            }
-            
-            // Encode data for URL
-            $encoded_staffname = base64_encode($staffname);
-            $encoded_staffid = base64_encode($row['staffid']);
-            $encoded_seat_no = base64_encode($row['seat_no']);
-            $encoded_ticket_type = base64_encode($row['ticket_type']);
-            $encoded_booking_date = base64_encode($row['booking_date']->format('Y-m-d'));
-            $encoded_description = base64_encode($description);
-            $encoded_amount = base64_encode($amount);
+                
+                echo '</td>';
+                echo '<td>' . $amount . '</td>';
 
-            // Construct link
-            $link = "view.php?staffid=$encoded_staffid&staffname=$encoded_staffname&seat_no=$encoded_seat_no&ticket_type=$encoded_ticket_type&booking_date=$encoded_booking_date&description=$encoded_description&amount=$encoded_amount";
-            echo '<td><a href="' . $link . '"><button>View Details</button></a></td>';
-            
-            echo '</tr>';
+                // Display staff name
+                echo "<td>$stafffname</td>";
+
+                // Encode data for URL
+                $encoded_staffname = base64_encode($staffname);
+                $encoded_staffid = base64_encode($row['staffid']);
+                $encoded_seat_no = base64_encode($row['seat_no']);
+                $encoded_ticket_type = base64_encode($row['ticket_type']);
+                $encoded_booking_date = base64_encode($row['booking_date']->format('Y-m-d'));
+                $encoded_description = base64_encode($description);
+                $encoded_amount = base64_encode($amount);
+
+                // Construct link
+                $link = "view.php?staffid=$encoded_staffid&staffname=$encoded_staffname&seat_no=$encoded_seat_no&ticket_type=$encoded_ticket_type&booking_date=$encoded_booking_date&description=$encoded_description&amount=$encoded_amount";
+                echo '<td><a href="' . $link . '"><button>View Details</button></a></td>';
+                
+                echo '</tr>';
+            }
+        } else {
+            echo "Error fetching staff details: " . print_r(sqlsrv_errors(), true);
         }
 
         echo '</tbody>';
         echo '</table>';
         echo '</div>';
     } else {
+        // Display message if no records found
         echo "No records found for staff ID: $staffy.";
     }
 } else {
+    // Display error message if 'walletQuery' is empty
     echo "Error: No 'staffid' parameter provided.";
 }
 ?>
+
+
+
 
                                 
         

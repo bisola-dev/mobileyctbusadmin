@@ -2,7 +2,12 @@
 // Include necessary files
 require_once('cann2.php');
 require_once('envary.php');
-
+if ($ROLEZ !== 1) {
+    // If user's role is not equal to 1, redirect to another page and display an alert
+    echo '<script type="text/javascript">
+        alert("You are not authorized to view this page!");
+        window.location.href = "busdashboard.php";
+    </script>';}
 
 try {
     
@@ -207,7 +212,7 @@ try {
                         echo '<tr>';
                         echo '<td>' . $row['USERNAME'] . '</td>';
                         echo '<td>' . ($row['ROLEZ'] == 1 ? 'SuperAdmin' : 'Admin') . '</td>';
-                        echo '<td><button class="delete-btn" data-id="' . $row['ID'] . '">Delete</button></td>';
+                        echo '<td><button type="button" class="delete-btn" data-id="' . $row['ID'] . '">Delete</button></td>';
                         echo '</tr>';
                     }
                 }
@@ -216,34 +221,40 @@ try {
         </table>
     </div>
     </div>
+
+
+
+
     <script>
-// Add event listener to delete buttons
-document.querySelectorAll('.delete-btn').forEach(function(button) {
-    button.addEventListener('click', function() {
-        var adminId = this.getAttribute('data-id');
-        if (confirm('Are you sure you want to delete the admin')) {
-            // Send AJAX request to delete admin record
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        // Reload the page after successful deletion
-                        window.location.reload();
-                        alert('Admin with ID ' + adminId + ' has been successfully deleted.');
-                    } else {
-                        // Handle error
-                        alert('Error deleting admin: ' + xhr.responseText);
+    // Add event listener to delete buttons
+    document.querySelectorAll('.delete-btn').forEach(function(button) {
+        button.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default action of the button
+            
+            var adminId = this.getAttribute('data-id');
+            if (confirm('Are you sure you want to delete the admin')) {
+                // Send AJAX request to delete admin record
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            // Remove the deleted admin's row from the table
+                            var row = button.parentNode.parentNode;
+                            row.parentNode.removeChild(row);
+                            alert('Admin with ID ' + adminId + ' has been successfully deleted.');
+                        } else {
+                            // Handle error
+                            alert('Error deleting admin: ' + xhr.responseText);
+                        }
                     }
-                }
-            };
-            xhr.open('POST', 'delete_admin.php', true);
-            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-            xhr.send('adminId=' + encodeURIComponent(adminId));
-        }
+                };
+                xhr.open('POST', 'delete_admin.php', true);
+                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                xhr.send('adminId=' + encodeURIComponent(adminId));
+            }
+        });
     });
-});
+</script>
 
-
-        </script>
 </body>
 </html>
