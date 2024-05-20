@@ -64,19 +64,17 @@ require_once('envary.php');
         <img src="glaze/yabayctlogo.png" alt="Yabayct Logo" style="width: 70px; height: auto; margin-top: 22px;">
         </div>
         <ul>
-        <li><a href="busdashboard.php">Home</a></li>
-        <li><a href="createaccount.php">Create Account</a></li>
-        <li><a href="editaccount.php">Edit Account</a></li>
-        <li><a href="funding.php">Fund Wallet</a></li>
-        <li><a href="viewtransc.php">View Wallet Transaction</a></li>
-        <li><a href="booking.php">Book Bus</a></li>
-        <li><a href="viewbooking.php">View Booking</a></li>
-        <li><a href="logout.php">Logout</a></li>
-    </ul>
+            <li><a href="busdashboard.php">Home</a></li>
+            <li><a href="Addadmin.php">Add admin</a></li>
+            <li><a href="Addstaff.php">Add Staff</a></li>
+            <li><a href="viewtransc.php">View all Wallet Transaction</a></li>
+            <li><a href="viewbooking.php">View all Booking</a></li>
+            <li><a href="logout.php">Logout</a></li>
+        </ul>
     </div>
 
     <div id="content">
-    <h3 style="text-align: center;">Welcome, <?php echo $name;?>, Do enjoy a seamless bus ticket request.</h3>
+    <h3 style="text-align: center;">Welcome, Admin  <?php echo $uzname;?>, Do enjoy a seamless  check on the bus ticket system.</h3>
         <p style="text-align: center;">This is the YCT Bus Booking Dashboard.</p>
 
 

@@ -1,15 +1,19 @@
 <?php
 require_once('cann2.php');
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve user input
-    $staffy = $_POST["staffy"];
+    $ustaz = $_POST["ustaz"];
     $surn = $_POST["surn"];
-    
+
+    $rik = 'stabuyct' . $surn;
+    $hpazz = md5($rik);
+
     // Check if staff ID and password are provided
-    if (!empty($staffy) && !empty($surn)) {
+    if (!empty($ustaz) && !empty($surn)) {
         // Prepare SQL query
-        $bintu = "SELECT * FROM [Bus_Booking].[dbo].[stafflist] WHERE STAFFNUMBER = ? AND SURNAME=?";
-        $params = array($staffy, $surn);
+        $bintu = "SELECT * FROM [Bus_Booking].[dbo].[admin] WHERE USERNAME = ? AND PASSWORD=?";
+        $params = array($ustaz, $hpazz);
         $options = array("Scrollable" => SQLSRV_CURSOR_KEYSET);
 
         // Execute SQL query
@@ -22,27 +26,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($row_count > 0) {
                 // Fetch the data
                 while ($rowz = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-                    $surn = $rowz['SURNAME'];
-                    $firs = $rowz['FIRSTNAME'];
-                    $midd = $rowz['MIDDLENAME'];
-
-                    // Store user data in session
-                    $_SESSION['SURNAME'] = $surn;
-                    $_SESSION['FIRSTNAME'] = $firs;
-                    $_SESSION['MIDDLENAME'] = $midd;
-                    $_SESSION['staffy'] = $staffy;
-
-                    $clot = $surn . ' ' . $firs . ' ' . $midd;
+                    $uzname = $rowz['USERNAME'];
+                    $rolez = $rowz['ROLEZ'];
                 }
-                // Redirect user on successful login
-                echo '<script type="text/javascript">
-                        alert("Login successful!");
-                        window.location.href="busdashboard.php";
-                      </script>';
+
+                // Store user data in session
+                $_SESSION['USERNAME'] = $uzname;
+                $_SESSION['ROLEZ'] = $rolez;
+
+                // Perform timestamp update
+                $bint3 = "UPDATE [Bus_Booking].[dbo].[admin] SET datetimelog= '$tstamp' WHERE USERNAME = '$ustaz'";
+                $stmt2 = sqlsrv_query($conn, $bint3);
+
+                // Check if timestamp update was successful
+                if ($stmt2 !== false) {
+                    // Redirect user on successful login
+                    echo '<script type="text/javascript">
+                            alert("Login successful!");
+                            window.location.href="busdashboard.php";
+                          </script>';
+                } else {
+                    // Handle timestamp update error
+                    echo '<script type="text/javascript">
+                            alert("Timestamp update error!");
+                          </script>';
+                }
             } else {
                 // Notify user about incorrect staff ID or password
                 echo '<script type="text/javascript">
-                        alert("Incorrect staff ID or password!");
+                        alert("incorrect Admin name or password!");
                       </script>';
             }
         } else {
@@ -54,17 +66,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         // Handle empty staff ID or password
         echo '<script type="text/javascript">
-                alert("Please provide both staff ID and password!");
+                alert("Please provide both Admin name and password!");
               </script>';
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yaba Tech Staff Bus portal - Login</title>
+    <title>Yaba Tech Staff Bus portal - AdminLogin</title>
     <style>
         
 
@@ -159,27 +172,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="logo">
             <img src="yabanewlogo.png" alt="Yaba College of Technology Logo">
         </div>
-        <h2>Yaba Tech Staff Bus Portal</h2>
+        <h2>Yaba Tech Staff Bus Portal- Admin </h2>
         <form action="" method="POST">
             <div class="form-group">
-                <label for="username_or_email">Please log in with your staff number:</label>
-                <input type="text" id="staffy" name="staffy" required>
+                <label for="username_or_email">Username</label>
+                <input type="text" id="ustaz" name="ustaz" required>
             </div>
 
             <div class="form-group">
          <label for="Password">Password:</label>
          <div class="password-input-container">
-        <input type="password" id="surn" name="surn" placeholder="Your surname is your password" required>
+        <input type="password" id="surn" name="surn" required>
         <button type="button" id="showPasswordBtn" onclick="togglePasswordVisibility()"></button>
     </div>
 </div>
 
         <button type="submit" class="btn-login">Login</button>
         </form>
-        <footer>
-            For complaints, please send a mail to busticketing@yabatech.edu.ng or see the CITM.
-            <p>Yaba College of Technology, CITM Software &copy; <?php echo date("Y"); ?></p>
-        </footer>
     </div>
 
 

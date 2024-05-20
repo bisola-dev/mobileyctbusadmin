@@ -29,5 +29,6 @@ function FormatErrors($errors)
     }
 }
 session_start();
-$tstamp= date('Y-m-d');
+$tstamp = date('Y-m-d H:i:s');
+
 ?>

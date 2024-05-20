@@ -1,37 +1,37 @@
-
-
 <?php
 require_once('cann2.php');
-require_once('envar2.php');
+require_once('envary.php');
 
-// Fetch existing email and phone for display
-$chin = "SELECT COUNT(*) AS count FROM [Bus_Booking].[dbo].[Account] WHERE staffid='$staffy'";
-$kin = sqlsrv_query($conn, $chin);
+// Initialize variables
+$staffy = "";
+$staffIdError = "";
+$walletQuery = "";
+$Balance = 0;
+$staffname = ""; // Initialize error message variable
 
-// Check if the SQL query was successful
-if ($kin === false) {
-    // Handle SQL error
-    echo "An error occurred while fetching account information.";
-} else {
-    // Fetch the count of rows
-    $row = sqlsrv_fetch_array($kin, SQLSRV_FETCH_ASSOC);
-    $count = $row['count'];
+// Check if the form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Validate staff ID
+    if (empty($_POST["staffId"])) {
+        $staffIdError = "Staff ID is required";
+    } else {
+        $staffy = $_POST["staffId"];
+        $walletQuery = "SELECT * FROM [Bus_Booking].[dbo].[Transactions] WHERE staffid = ?";
+        
+        // Execute the wallet query
+        $params = array($staffy);
+        $walletResult = sqlsrv_query($conn, $walletQuery, $params);
 
-    // Check if the account exists
-    if ($count === 0) {
-        // Account already exists, redirect to edit page
-        echo '<script type="text/javascript">
-        alert("You have not created an account. please create an account.");
-        window.location.href="createaccount.php";
-        </script>';
-    } 
+        if ($walletResult === false) {
+            die("Error executing wallet query: " . print_r(sqlsrv_errors(), true));
+        }
+    }
 }
 
 
-
-
-
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,6 +40,7 @@ if ($kin === false) {
     <title>View Transactions</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
     <style>
+          <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -53,47 +54,101 @@ if ($kin === false) {
             justify-content: center; /* Center items horizontally */
             align-items: center;
             flex-direction: column; /* Stack items vertically */
-            height:auto; /* Reduce height to bring it up */
-            width: 100%; /* Full width */
-            margin-top: 1px; /* Add some top margin */
+            height: auto; /* Reduce height to bring it up */
+          width: 100%; /* Full width */
+          margin-top: 10px; /* Add some top margin */
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 45%; /* Adjusted width */
+            text-align: center;
+             margin: 0 auto; /* Center the form */
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: calc(100% - 22px); /* Adjusted for padding */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 10px;
+            background-color: #008000;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #FFFF00;
+            color: #000;
         }
 
         /* Table styles */
         table {
-            width: 100%; /* Full width */
-            border-collapse: collapse;
-            border: 1px solid #ccc;
-            margin-bottom: 20px; /* Add space between form and table */
-        }
+    width: 100%; /* Adjusted width to fill the container */
+    border-collapse: collapse;
+    border: 1px solid #ccc;
+    margin-bottom: 20px; /* Add space between form and table */
+}
 
-        th, td {
-            padding: 8px;
-            border: 1px solid #ccc;
-            text-align: left;
-            word-break: break-word; /* Break long words */
-        }
+th, td {
+    padding: 8px;
+    border: 1px solid #ccc;
+    text-align: left;
+    max-width: 150px; /* Limit the maximum width of table cells */
+    overflow: hidden; /* Hide overflowing content */
+    text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+    white-space: nowrap; /* Prevent text wrapping */
+}
 
-        th {
-            background-color: #008000;
-            color: #fff;
-        }
+th {
+    background-color: #008000;
+    color: #fff;
+}
+        /* New table styles */
+.wallet-table {
+    width: 30%; /* Adjusted width */
+    border-collapse: collapse;
+    border: 1px solid #ccc;
+    margin-top: 20px; /* Add space between previous table and new table */
+}
 
-        tbody tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
+.wallet-table th, .wallet-table td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: center;
+    font-weight: bold;
+}
 
-        .dataTables_wrapper {
-            width: 100%;
-        }
+.wallet-table th {
+    background-color: #008000;
+    color: #fff;
+}
 
-        .dataTables_filter {
-            text-align: right;
-            margin-bottom: 10px;
-        }
 
-        .dataTables_paginate {
-            text-align: center;
-        }
+
+    </style>
     </style>
 </head>
 <body>
@@ -103,96 +158,128 @@ if ($kin === false) {
         <?php include "sidebar.php"; ?>
     </div>
 
-    <?php
-    echo "<p><b>WELCOME, $name </p></b>";
-    echo "<p><i>View bookings </p></i>";
+    <p><b>WELCOME, Admin <?php echo $uzname; ?></b></p>
 
-    // Check if the 'staffid' parameter is provided
-    if (isset($staffy)) {
-        // Query to fetch bookings based on the staffid
-        $query = "SELECT * FROM [Bus_Booking].[dbo].[Transactions] WHERE staffid = ? ORDER BY booking_date DESC";
-        $params = array($staffy);
-        $result = sqlsrv_query($conn, $query, $params);
+    <div class="form-container">
+        <form action="" method="POST">
+            <div class="form-group">
+                <label for="staffId">Search Bookings by Staff ID:</label>
+                <input type="text" id="staffId" name="staffId" placeholder="Enter Staff ID">
+                <span class="error"><?php echo $staffIdError; ?></span>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-submit">Search</button>
+            </div>
+        </form>
+    </div>
 
-        // Check if the query execution was successful
-        if ($result === false) {
-            die(print_r(sqlsrv_errors(), true));
-        }
+    <p><i>View bookings</i></p>
 
-        // Check if any rows were returned
-        if (sqlsrv_has_rows($result)) {
-            // Output table with responsive design
-            echo "<div style='overflow-x:auto;'>";
-            echo "<table id='myTable' class='display'>";
-            echo "<thead>";
-            echo "<tr><th>Staff ID</th><th>Seat Number</th><th>Booking Date</th><th>Route Description</th><th>Amount</th><th>View Booking</th></tr>";
-            echo "</thead>";
-            echo "<tbody>";
+    <?php 
+if (!empty($walletQuery)) {
+    if (sqlsrv_has_rows($walletResult)) {
+        echo '<div style="overflow-x:auto;">';
+        echo '<table id="myTable" class="display">';
+        echo '<thead>';
+        echo '<tr>';
+        echo '<th>Staff ID</th>';
+        echo '<th>Seat Number</th>';
+        echo '<th>Booking Date</th>';
+        echo '<th>Route Description</th>';
+        echo '<th>Amount</th>';
+        echo '<th>View Booking</th>';
+        echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
 
-            // Output each row of bookings
-            while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
-                echo "<tr>";
-                echo "<td>" . $row['staffid'] . "</td>";
-                echo "<td>" . $row['ticket_type'] . " " . $row['seat_no'] . "</td>";   
-                echo "<td>" . $row['booking_date']->format('Y-m-d') . "</td>"; // Assuming booking_date is a DateTime object
-                "<td>" . $row['ticket_type'] . "</td>";
-                // Fetch additional information based on 'rid'
-                $rid = $row['rid'];
-                $query2 = "SELECT description, amount FROM [Bus_Booking].[dbo].[Routes] WHERE rid = ?";
-                $params2 = array($rid);
-                $result2 = sqlsrv_query($conn, $query2, $params2);
-                
-                if ($result2 !== false && sqlsrv_has_rows($result2)) {
-                    while ($row2 = sqlsrv_fetch_array($result2, SQLSRV_FETCH_ASSOC)) {
-                        $description = $row2['description'];
-                        $amount = $row2['amount'];
-                
-                        echo "<td>$description</td>";
-                        echo "<td>$amount</td>";
+        while ($row = sqlsrv_fetch_array($walletResult, SQLSRV_FETCH_ASSOC)) {
+            echo '<tr>';
+            echo '<td>' . $row['staffid'] . '</td>';
+            echo '<td>' . $row['ticket_type'] . ' ' . $row['seat_no'] . '</td>';
+            echo '<td>' . $row['booking_date']->format('Y-m-d') . '</td>';
+            echo '<td>';
+            
+            $rid = $row['rid'];
+            $query2 = "SELECT description, amount FROM [Bus_Booking].[dbo].[Routes] WHERE rid = ?";
+            $params2 = array($rid);
+            $result2 = sqlsrv_query($conn, $query2, $params2);
 
-                        $encoded_staffid = base64_encode($row['staffid']);
-                        $encoded_seat_no = base64_encode($row['seat_no']);
-                        $encoded_ticket_type = base64_encode($row['ticket_type']);
-                        $encoded_booking_date = base64_encode($row['booking_date']->format('Y-m-d'));
-                        $encoded_description = base64_encode($description);
-                        $encoded_amount = base64_encode($amount);
-
-                        $link = "view.php?staffid=$encoded_staffid&seat_no=$encoded_seat_no&ticket_type=$encoded_ticket_type&booking_date=$encoded_booking_date&description=$encoded_description&amount=$encoded_amount";
-                        echo "<td><a href=\"$link\"><button>View Details</button></a></td>";
-                
-                    }
+            if ($result2 !== false && sqlsrv_has_rows($result2)) {
+                while ($row2 = sqlsrv_fetch_array($result2, SQLSRV_FETCH_ASSOC)) {
+                    $description = $row2['description'];
+                    $amount = $row2['amount'];
+                    echo $description;
                 }
-
-                else {
-                    echo "<td>No route description found for RID: $rid</td>";
-                 
-                }
-
-                echo "</tr>";
+            } else {
+                echo "No route description found for RID: $rid";
             }
+            
+            echo '</td>';
+            echo '<td>' . $amount . '</td>';
 
-            // Close table body and table
-            echo "</tbody>";
-            echo "</table>";
-            echo "</div>";
-        } else {
-            echo "No records found for staff ID: $staffy.";
+            // SQL query to fetch data
+            $query = "SELECT SURNAME, FIRSTNAME, MIDDLENAME FROM [Bus_Booking].[dbo].[stafflist] WHERE STAFFNUMBER = ?";
+            $params = array($staffy);
+            $rezn = sqlsrv_query($conn, $query, $params);
+
+            // Check if query was successful
+            if ($rezn !== false) {
+                // Check if any rows were returned
+                if (sqlsrv_has_rows($rezn)) {
+                    // Fetch data
+                    $staff_row = sqlsrv_fetch_array($rezn, SQLSRV_FETCH_ASSOC);
+                    // Extract values from the fetched row
+                    $surname = $staff_row['SURNAME'];
+                    $firstname = $staff_row['FIRSTNAME'];
+                    $middlename = $staff_row['MIDDLENAME'];
+
+                    // Combine names
+                    $staffname = $surname . ' ' . $firstname . ' ' . $middlename;
+                } else {
+                    echo "No record found for staff number: " . $row['staffid'];
+                }
+            } else {
+                // Handle query execution error
+                echo "Error executing query: " . sqlsrv_errors();
+            }
+            
+            // Encode data for URL
+            $encoded_staffname = base64_encode($staffname);
+            $encoded_staffid = base64_encode($row['staffid']);
+            $encoded_seat_no = base64_encode($row['seat_no']);
+            $encoded_ticket_type = base64_encode($row['ticket_type']);
+            $encoded_booking_date = base64_encode($row['booking_date']->format('Y-m-d'));
+            $encoded_description = base64_encode($description);
+            $encoded_amount = base64_encode($amount);
+
+            // Construct link
+            $link = "view.php?staffid=$encoded_staffid&staffname=$encoded_staffname&seat_no=$encoded_seat_no&ticket_type=$encoded_ticket_type&booking_date=$encoded_booking_date&description=$encoded_description&amount=$encoded_amount";
+            echo '<td><a href="' . $link . '"><button>View Details</button></a></td>';
+            
+            echo '</tr>';
         }
+
+        echo '</tbody>';
+        echo '</table>';
+        echo '</div>';
     } else {
-        echo "Error: No 'staffid' parameter provided.";
+        echo "No records found for staff ID: $staffy.";
     }
-    ?>
-</div>
+} else {
+    echo "Error: No 'staffid' parameter provided.";
+}
+?>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+                                
+        
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
-
 <script>
-    $(document).ready( function () {
+    $(document).ready(function() {
         $('#myTable').DataTable({
-            responsive: true // Enable responsive design
+            responsive: true
         });
-    } );
+    });
 </script>
 
 </body>

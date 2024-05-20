@@ -1,8 +1,4 @@
 <?php 
-$surn = $_SESSION['SURNAME'];
-$firs = $_SESSION['FIRSTNAME'];
-$midd = $_SESSION['MIDDLENAME'];
-
-$staffy = $_SESSION['staffy']; 
-
-$name= $surn.' '.$firs.' '.$midd; ?>
+$uzname= $_SESSION['USERNAME'];
+$rolez= $_SESSION['ROLEZ'];
+?>

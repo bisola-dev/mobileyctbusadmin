@@ -3,36 +3,26 @@
 <?php
 
 require_once('cann2.php');
-require_once('envar2.php');
+require_once('envary.php');
 
-// Check if the account exists
-$chin = "SELECT COUNT(*) AS count FROM [Bus_Booking].[dbo].[Account] WHERE staffid='$staffy'";
-$kin = sqlsrv_query($conn, $chin);
+// Default query without search
+$walletQuery = "SELECT * FROM [Bus_Booking].[dbo].[wallet_trans] 
+/*WHERE status = 1*/";
+$params = array();
+$staffy = "";
 
-if ($kin === false) {
-    // Handle SQL error
-    echo "An error occurred while fetching account information.";
-} else {
-    $row = sqlsrv_fetch_array($kin, SQLSRV_FETCH_ASSOC);
-    $count = $row['count'];
-
-    if ($count === 0) {
-        // Account does not exist, redirect to create account page
-        echo '<script type="text/javascript">
-        alert("You have not created an account. Please create an account.");
-        window.location.href="createaccount.php";
-        </script>';
-        exit; // Stop further execution
-    }
+// Check if the form is submitted and staff ID is provided
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["staffId"])) {
+    // Retrieve the staff ID from the form
+    $staffy = $_POST["staffId"];
+    $walletQuery = "SELECT * FROM [Bus_Booking].[dbo].[wallet_trans] WHERE staffid = ?";
+    $params = array($staffy);
 }
 
-// Fetch wallet entries from the database and populate the table rows
-$walletQuery = "SELECT * FROM [Bus_Booking].[dbo].[wallet_trans] WHERE staffid = ? AND status = 1";
-$params = array($staffy);
+// Execute the wallet query
 $walletResult = sqlsrv_query($conn, $walletQuery, $params);
-
 if ($walletResult === false) {
-    die(print_r(sqlsrv_errors(), true));
+    die("Error executing wallet query: " . print_r(sqlsrv_errors(), true));
 }
 
 // Fetch the available balance from the Finance table
@@ -42,7 +32,7 @@ $result = sqlsrv_query($conn, $balanceQuery, $params2);
 
 if ($result === false) {
     // Error occurred while checking existing finance records
-    echo '<script type="text/javascript">alert("Error occurred while checking existing finance records");</script>';
+    die("Error executing balance query: " . print_r(sqlsrv_errors(), true));
 } else {
     $Balance = 0; // Default value for balance
 
@@ -53,7 +43,10 @@ if ($result === false) {
     }
 }
 
+
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -198,42 +191,56 @@ if ($result === false) {
 
 <div class="container">
     <div class="sidebar">
-        <?php include "sidebar.php"; ?>
-    </div>
-
+        <?php include "sidebar.php";?>
+    </div> 
     <?php
-    echo "<p><b>WELCOME, $name </p></b>";
-    echo "<p><i>View wallet transactions </p></i>";
+echo "<p><b>Welcome, Admin $uzname </p></b>";
+?>
 
-    // Display wallet transactions table
-    if (sqlsrv_has_rows($walletResult)) {
-        echo "<table id='walletTable'>"; // Set table ID to walletTable
-        echo "<thead>";
+<div class="form-container">
+<form action="" method="POST">
+    <div class="form-group">
+        <label for="staffId">Search Wallet Transaction by Staff ID:</label>
+        <input type="text" id="staffId" name="staffId" placeholder="Enter Staff ID">
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn-submit">Search</button>
+    </div>
+</form>
+</div>
+
+<?php
+echo "<p><i>View wallet transactions </p></i>";
+
+// Display wallet transactions table
+if (sqlsrv_has_rows($walletResult)) {
+    echo "<table id='walletTable'>"; // Set table ID to walletTable
+    echo "<thead>";
+    echo "<tr>";
+    echo "<th>Staff ID</th>";
+    echo "<th>Amount in wallet</th>";
+    echo "<th>Remitta_rrr</th>";
+    echo "<th>Date(Y-M-D)</th>";
+    echo "</tr>";
+    echo "</thead>";
+    echo "<tbody>";
+    while ($row = sqlsrv_fetch_array($walletResult, SQLSRV_FETCH_ASSOC)) {
         echo "<tr>";
-        echo "<th>Staff ID</th>";
-        echo "<th>Amount in wallet</th>";
-        echo "<th>Remitta_rrr</th>";
-        echo "<th>Date(Y-M-D)</th>";
+        echo "<td>" . $row['staffid'] . "</td>";
+        echo "<td>₦" . $row['amount'] . "</td>";
+        echo "<td>" . $row['remita_rrr'] . "</td>";
+        echo "<td>" . $row['trans_date']->format('Y-m-d') . "</td>";
         echo "</tr>";
-        echo "</thead>";
-        echo "<tbody>";
-        while ($row = sqlsrv_fetch_array($walletResult, SQLSRV_FETCH_ASSOC)) {
-            echo "<tr>";
-            echo "<td>" . $row['staffid'] . "</td>";
-            echo "<td>₦" . $row['amount'] . "</td>";
-            echo "<td>" . $row['remita_rrr'] . "</td>";
-            echo "<td>" . $row['trans_date']->format('Y-m-d') . "</td>";
-            echo "</tr>";
-        }
-        echo "</tbody>";
-        echo "</table>";
-    } else {
-        echo '<div class="no-transactions">No transactions to display.</div>';
     }
+    echo "</tbody>";
+    echo "</table>";
+} else {
+    echo '<div class="no-transactions">No transactions to display.</div>';
+}
 
-    // Free the result set
-    sqlsrv_free_stmt($walletResult);
-    ?>
+// Free the result set
+sqlsrv_free_stmt($walletResult);
+?>
 
     <!-- Display available balance -->
     <table id="balanceTable"> <!-- Set table ID to balanceTable -->

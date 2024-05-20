@@ -71,12 +71,10 @@
         </div>
         <ul>
             <li><a href="busdashboard.php">Home</a></li>
-            <li><a href="createaccount.php">Create Account</a></li>
-            <li><a href="editaccount.php">Edit Account</a></li>
-            <li><a href="funding.php">Fund Wallet</a></li>
-            <li><a href="viewtransc.php">View Wallet Transaction</a></li>
-            <li><a href="booking.php">Book Bus</a></li>
-            <li><a href="viewbooking.php">View Booking</a></li>
+            <li><a href="Addadmin.php">Add admin</a></li>
+            <li><a href="Addstaff.php">Add Staff</a></li>
+            <li><a href="viewtransc.php">View all Wallet Transaction</a></li>
+            <li><a href="viewbooking.php">View all Booking</a></li>
             <li><a href="logout.php">Logout</a></li>
         </ul>
     </div>

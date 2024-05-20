@@ -1,9 +1,9 @@
 <?php
 require_once('cann2.php');
-require_once('envar2.php');
+require_once('envary.php');
 require_once 'phpqrcode/qrlib.php';
 
-
+$staffname = base64_decode($_GET['staffname']);
 $staffid = base64_decode($_GET['staffid']);
 $seat_no = base64_decode($_GET['seat_no']);
 $booking_date = base64_decode($_GET['booking_date']);
@@ -11,7 +11,7 @@ $description = base64_decode($_GET['description']);
 $amount = base64_decode($_GET['amount']);
 $ticket_type = base64_decode($_GET['ticket_type']);
 
-$bookingDetails = "BookingDate: $booking_date, Name: $name, Route: $description, Amount: $amount , Seat Number:$seat_no,Ticket type:$ticket_type";
+$bookingDetails = "BookingDate: $booking_date, Name: $staffname, Route: $description, Amount: $amount , Seat Number:$seat_no,Ticket type:$ticket_type";
 // Function to generate QR code
 function generateQRCode($bookingDetails, $fileName) {
     // File path where you want to save the QR code image
@@ -118,7 +118,7 @@ function generateQRCode($bookingDetails, $fileName) {
                 </div>
                 <div class="detail">
                     <label>Staff Name:</label>
-                    <span><?php echo $name; ?></span>
+                    <span><?php echo $staffname; ?></span>
                 </div>
                 <div class="detail">
                     <label>Route:</label>
