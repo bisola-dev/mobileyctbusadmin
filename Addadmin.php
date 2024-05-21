@@ -2,7 +2,7 @@
 // Include necessary files
 require_once('cann2.php');
 require_once('envary.php');
-if ($ROLEZ !== 1) {
+if ($rolez != 1) {
     // If user's role is not equal to 1, redirect to another page and display an alert
     echo '<script type="text/javascript">
         alert("You are not authorized to view this page!");

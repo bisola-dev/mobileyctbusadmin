@@ -1,6 +1,12 @@
 <?php 
 session_start();
 require_once('envary.php');
+
+if(isset($_SESSION['USERNAME']) && isset($_SESSION['ROLEZ'])) {
+    $uzname = $_SESSION['USERNAME'];
+    $rolez = $_SESSION['ROLEZ'];
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -64,9 +70,12 @@ require_once('envary.php');
         <img src="glaze/yabayctlogo.png" alt="Yabayct Logo" style="width: 70px; height: auto; margin-top: 22px;">
         </div>
         <ul>
-            <li><a href="busdashboard.php">Home</a></li>
-            <li><a href="Addadmin.php">Add admin</a></li>
-            <li><a href="Addstaff.php">Add Staff</a></li>
+        <li><a href="busdashboard.php">Home</a></li> 
+            <?php 
+         if ($rolez == 1) { 
+        echo '<li><a href="Addadmin.php">Add admin</a></li>';
+        echo '<li><a href="Addstaff.php">Add Staff</a></li>';
+              } ?>
             <li><a href="viewtransc.php">View all Wallet Transaction</a></li>
             <li><a href="viewbooking.php">View all Booking</a></li>
             <li><a href="logout.php">Logout</a></li>
