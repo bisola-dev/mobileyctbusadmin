@@ -16,7 +16,7 @@
 
         /* Sidebar styles */
         #sidebar {
-            width: 180px;
+            width: 150px;
             height: 100%;
             background-color: #008000; /* Green */
             position: fixed;
@@ -71,10 +71,15 @@
         </div>
         <ul>
             <li><a href="busdashboard.php">Home</a></li>
-            <li><a href="Addadmin.php">Add admin</a></li>
-            <li><a href="Addstaff.php">Add Staff</a></li>
+            <?php 
+         if ($rolez == 1) { 
+        echo '<li><a href="Addadmin.php">Add admin</a></li>';
+        echo '<li><a href="Addstaff.php">Add Staff</a></li>';
+        echo '<li><a href="Addroute.php">Add Route</a></li>';
+              } ?>
             <li><a href="viewtransc.php">View all Wallet Transaction</a></li>
             <li><a href="viewbooking.php">View all Booking</a></li>
+            <li><a href="viewroute.php">View all routes</a></li>
             <li><a href="logout.php">Logout</a></li>
         </ul>
     </div>

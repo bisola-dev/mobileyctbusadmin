@@ -75,9 +75,11 @@ if(isset($_SESSION['USERNAME']) && isset($_SESSION['ROLEZ'])) {
          if ($rolez == 1) { 
         echo '<li><a href="Addadmin.php">Add admin</a></li>';
         echo '<li><a href="Addstaff.php">Add Staff</a></li>';
+        echo '<li><a href="Addroute.php">Add Route</a></li>';
               } ?>
             <li><a href="viewtransc.php">View all Wallet Transaction</a></li>
             <li><a href="viewbooking.php">View all Booking</a></li>
+            <li><a href="viewroute.php">View all routes</a></li>
             <li><a href="logout.php">Logout</a></li>
         </ul>
     </div>
