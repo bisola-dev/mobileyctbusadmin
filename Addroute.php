@@ -86,7 +86,7 @@ try {
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            margin: 40px auto;
+            margin: 20px auto; /* Slightly reduce margin for better visibility */
         }
 
         .form-container {
@@ -97,6 +97,7 @@ try {
             max-width: 400px;
             width: 100%;
             text-align: center;
+            margin-bottom: 10px; /* Add margin to separate from table */
         }
 
         .form-container h2 {
@@ -138,7 +139,8 @@ try {
         .admin-table {
             width: 50%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 5px;
+            background-color: #fff; /* Add background color to table */
         }
 
         .admin-table th, .admin-table td {
@@ -148,7 +150,8 @@ try {
         }
 
         .admin-table th {
-            background-color: #f2f2f2;
+            background-color: #008000; /* Change header background color */
+            color: #fff; /* Change header text color */
         }
 
         .delete-btn {
@@ -163,6 +166,35 @@ try {
         .delete-btn:hover {
             background-color: #ff0000;
         }
+          /* CSS for the edit form pop-up */
+    #editFormContainer {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+    }
+
+    /* Add this CSS to your existing styles */
+.btn-cancel {
+    background-color: #ff6347;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px; /* Add margin to separate from the "Save Changes" button */
+}
+
+.btn-cancel:hover {
+    background-color: #ff0000;
+}
+
     </style>
 </head>
 <body>
@@ -196,7 +228,100 @@ try {
                 <button type="submit" class="btn-submit">Add Route</button>
             </form>
         </div>
+        
+   <!-- Display routes table -->
+   <?php
+        // Fetch routes data
+        $query = "SELECT * FROM [Bus_Booking].[dbo].[Routes]";
+        $result = sqlsrv_query($conn, $query);
 
-        </script>
+        if ($result === false) {
+            // Handle query execution error
+            $errors = sqlsrv_errors();
+            echo '<script>alert("Error fetching routes data: ' . $errors[0]['message'] . '");</script>';
+        } else {
+            // Display routes table
+            echo '<table class="admin-table">';
+            echo '<thead>';
+            echo '<tr>';
+            echo '<th>Route Description</th>';
+            echo '<th>Amount</th>';
+            echo '<th>Seat Capacity</th>';
+            echo '<th>Stand Capacity</th>';
+            echo '<th>Action</th>';
+            echo '</tr>';
+            echo '</thead>';
+            echo '<tbody>';
+
+            while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
+                echo '<tr>';
+                echo '<td>' . $row['description'] . '</td>';
+                echo '<td>' . $row['amount'] . '</td>';
+                echo '<td>' . $row['seat_capacity'] . '</td>';
+                echo '<td>' . $row['stand_capacity'] . '</td>';
+                echo '<td><button class="edit-btn" onclick="openEditPopup(' . $row['rid'] . ', \'' . $row['description'] . '\', ' . $row['amount'] . ', ' . $row['seat_capacity'] . ', ' . $row['stand_capacity'] . ')">Edit</button></td>';
+
+                echo '</tr>';
+            }
+
+            echo '</tbody>';
+            echo '</table>';
+        }
+
+        // Free result and close connection
+        sqlsrv_free_stmt($result);
+        sqlsrv_close($conn);
+        ?>
+
+<!-- Add this HTML at the end of your body tag -->
+<div id="editFormContainer" style="display: none;">
+    <div class="form-container">
+        <h2>Edit Route</h2>
+        <form id="editForm" action="edit_route.php" method="post">
+            <!-- Inputs for editing route details -->
+            <input type="hidden" id="editRouteId" name="editRouteId" value="">
+            <div class="form-group">
+                <label for="editRouteDescription">Route Description:</label>
+                <input type="text" id="editRouteDescription" name="editRouteDescription" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editAmount">Amount:</label>
+                <input type="number" id="editAmount" name="editAmount" required step="1">
+            </div>
+
+            <div class="form-group">
+                <label for="editSeatCapacity">Seat Capacity:</label>
+                <input type="number" id="editSeatCapacity" name="editSeatCapacity" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editStandCapacity">Stand Capacity:</label>
+                <input type="number" id="editStandCapacity" name="editStandCapacity" required>
+            </div>
+
+            <button type="submit" class="btn-submit">Save Changes</button>
+            <button type="button" class="btn-cancel" onclick="closeEditPopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Function to open the edit popup and populate the route details
+    function openEditPopup(routeId, routeDescription, amount, seatCapacity, standCapacity) {
+        document.getElementById('editRouteId').value = routeId;
+        document.getElementById('editRouteDescription').value = routeDescription;
+        document.getElementById('editAmount').value = amount;
+        document.getElementById('editSeatCapacity').value = seatCapacity;
+        document.getElementById('editStandCapacity').value = standCapacity;
+        document.getElementById('editFormContainer').style.display = 'block';
+    }
+
+    // Function to close the edit popup
+    function closeEditPopup() {
+        document.getElementById('editFormContainer').style.display = 'none';
+    }
+</script>
+
 </body>
 </html>

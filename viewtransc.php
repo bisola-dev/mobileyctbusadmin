@@ -166,9 +166,9 @@ if ($result === false) {
     width: 90%; /* Adjusted width */
     border-collapse: collapse;
     border: 1px solid #ccc;
-    margin-top: 50px; /* Add more space between tables */
-    margin-bottom: 20px; /* Add space between form and table */
-    margin-left: 20px; /* Add margin to justify table to the left */
+    margin-top: 20px; /* Add more space between tables */
+    margin-bottom: auto; /* Add space between form and table */
+    margin-left: auto; /* Add margin to justify table to the left */
 }
 
 #balanceTable th,
@@ -194,7 +194,7 @@ if ($result === false) {
         <?php include "sidebar.php";?>
     </div> 
     <?php
-echo "<p><b>Welcome, Admin $uzname </p></b>";
+   echo "<p><b>Welcome, Admin $uzname </p></b>";
 ?>
 
 <div class="form-container">

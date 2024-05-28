@@ -5,29 +5,16 @@ require_once('envary.php');
 // Initialize variables
 $staffy = "";
 $staffIdError = "";
-$walletQuery = "";
+$walletQuery = "SELECT * FROM [Bus_Booking].[dbo].[Transactions]"; // Query to select all transactions
 $Balance = 0;
 $staffname = ""; // Initialize error message variable
 
-// Check if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Validate staff ID
-    if (empty($_POST["staffId"])) {
-        $staffIdError = "Staff ID is required";
-    } else {
-        $staffy = $_POST["staffId"];
-        $walletQuery = "SELECT * FROM [Bus_Booking].[dbo].[Transactions] WHERE staffid = ?";
-        
-        // Execute the wallet query
-        $params = array($staffy);
-        $walletResult = sqlsrv_query($conn, $walletQuery, $params);
+// Execute the wallet query to fetch all transactions
+$allTransactionsResult = sqlsrv_query($conn, $walletQuery);
 
-        if ($walletResult === false) {
-            die("Error executing wallet query: " . print_r(sqlsrv_errors(), true));
-        }
-    }
+if ($allTransactionsResult === false) {
+    die("Error executing wallet query: " . print_r(sqlsrv_errors(), true));
 }
-
 
 ?>
 
@@ -40,7 +27,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>View Transactions</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
     <style>
-          <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -50,175 +36,75 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         .container {
+            width: 80%; /* Adjusted width */
+            margin: 20px auto; /* Center container */
             display: flex;
-            justify-content: center; /* Center items horizontally */
-            align-items: center;
-            flex-direction: column; /* Stack items vertically */
-            height: auto; /* Reduce height to bring it up */
-          width: 100%; /* Full width */
-          margin-top: 10px; /* Add some top margin */
+            justify-content: flex-end; /* Shift content to the right */
+            flex-direction: column; /* Align items in a column */
+            align-items: center; /* Center items horizontally */
         }
 
-        .form-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 45%; /* Adjusted width */
-            text-align: center;
-             margin: 0 auto; /* Center the form */
+        .welcome-message {
+            text-align: center; /* Center align the text */
+            margin-top: 20px; /* Add margin to the top */
         }
 
-        .form-group {
-            margin-bottom: 20px;
+        /* Table styles */
+        table {
+            width: 100%; /* Adjusted width to fill the container */
+            border-collapse: collapse;
+            border: 1px solid #ccc;
+            margin-bottom: 20px; /* Add space between form and table */
+        }
+
+        th, td {
+            padding: 10px; /* Add padding to cells */
+            border: 1px solid #ccc;
             text-align: left;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .form-group input {
-            width: calc(100% - 22px); /* Adjusted for padding */
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 10px;
+        th {
             background-color: #008000;
-            border: none;
             color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
         }
-
-        .btn-submit:hover {
-            background-color: #FFFF00;
-            color: #000;
-        }
-
-       /* Table styles */
-table {
-    width: 100%; /* Adjusted width to fill the container */
-    border-collapse: collapse;
-    border: 1px solid #ccc;
-    margin-bottom: 20px; /* Add space between form and table */
-    margin-left: auto; /* Align the table to the right */
-    margin-right: auto; /* Align the table to the left */
-}
-
-th, td {
-    padding: 8px;
-    border: 1px solid #ccc;
-    text-align: left;
-}
-
-th {
-    background-color: #008000;
-    color: #fff;
-}
-
-/* New table styles */
-.wallet-table {
-    width: 30%; /* Adjusted width */
-    border-collapse: collapse;
-    border: 1px solid #ccc;
-    margin-top: 20px; /* Add space between previous table and new table */
-    margin-left: auto; /* Align the table to the right */
-    margin-right: auto; /* Align the table to the left */
-}
-
-.wallet-table th, .wallet-table td {
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: center;
-    font-weight: bold;
-}
-
-.wallet-table th {
-    background-color: #008000;
-    color: #fff;
-}
-
-
-
-
-    </style>
     </style>
 </head>
 <body>
 
 <div class="container">
+<div class="welcome-message">
+        <p><b>WELCOME, Admin <?php echo $uzname; ?></b></p>
+    </div>
+
+
     <div class="sidebar">
         <?php include "sidebar.php"; ?>
     </div>
 
-    <p><b>WELCOME, Admin <?php echo $uzname; ?></b></p>
-
     <div class="form-container">
-        <form action="" method="POST">
-            <div class="form-group">
-                <label for="staffId">Search Bookings by Staff ID:</label>
-                <input type="text" id="staffId" name="staffId" placeholder="Enter Staff ID">
-                <span class="error"><?php echo $staffIdError; ?></span>
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn-submit">Search</button>
-            </div>
-        </form>
-    </div>
-
-    <p><i>View bookings</i></p>
-
-    <?php 
-if (!empty($walletQuery)) {
-    // Check if there are rows in the result
-    if (sqlsrv_has_rows($walletResult)) {
-        // Display table with records
-        echo '<div style="overflow-x:auto;">';
-        echo '<table id="myTable" class="display">';
-        echo '<thead>';
-        echo '<tr>';
-        echo '<th>Staff ID</th>';
-        echo '<th>Seat Number</th>';
-        echo '<th>Booking Date</th>';
-        echo '<th>Route Description</th>';
-        echo '<th>Amount</th>';
-        echo '<th>Staff Name</th>';
-        echo '<th>View Booking</th>';
-        echo '</tr>';
-        echo '</thead>';
-        echo '<tbody>';
-
-        // Prepare and execute SQL query to fetch staff details
-        $staffQuery = "SELECT SURNAME, FIRSTNAME, MIDDLENAME FROM [Bus_Booking].[dbo].[stafflist] WHERE STAFFNUMBER = ?";
-        $staffParams = array($staffy);
-        $staffResult = sqlsrv_query($conn, $staffQuery, $staffParams);
-
-        if ($staffResult !== false) {
-            // Fetch staff details
-            $staffRow = sqlsrv_fetch_array($staffResult, SQLSRV_FETCH_ASSOC);
-            $surname = $staffRow['SURNAME'];
-            $firstname = $staffRow['FIRSTNAME'];
-            $middlename = $staffRow['MIDDLENAME'];
-            $stafffname = $surname . ' ' . $firstname;
-            $staffname = $surname . ' ' . $firstname . ' ' . $middlename;
-
-            while ($row = sqlsrv_fetch_array($walletResult, SQLSRV_FETCH_ASSOC)) {
+        <p><i>View all bookings</i></p>
+        <table id="myTable">
+            <thead>
+            <tr>
+                <th>Staff ID</th>
+                <th>Seat Number</th>
+                <th>Booking Date</th>
+                <th>Route Description</th>
+                <th>Amount</th>
+                <th>Staff Name</th>
+                <th>View Booking</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+            while ($row = sqlsrv_fetch_array($allTransactionsResult, SQLSRV_FETCH_ASSOC)) {
                 // Display each row of data
                 echo '<tr>';
                 echo '<td>' . $row['staffid'] . '</td>';
                 echo '<td>' . $row['ticket_type'] . ' ' . $row['seat_no'] . '</td>';
                 echo '<td>' . $row['booking_date']->format('Y-m-d') . '</td>';
                 echo '<td>';
-                
+
                 $rid = $row['rid'];
                 $query2 = "SELECT description, amount FROM [Bus_Booking].[dbo].[Routes] WHERE rid = ?";
                 $params2 = array($rid);
@@ -233,12 +119,29 @@ if (!empty($walletQuery)) {
                 } else {
                     echo "No route description found for RID: $rid";
                 }
-                
+
                 echo '</td>';
                 echo '<td>' . $amount . '</td>';
 
-                // Display staff name
-                echo "<td>$stafffname</td>";
+                // Prepare and execute SQL query to fetch staff details
+                $staffQuery = "SELECT SURNAME, FIRSTNAME, MIDDLENAME FROM [Bus_Booking].[dbo].[stafflist] WHERE STAFFNUMBER = ?";
+                $staffParams = array($row['staffid']);
+                $staffResult = sqlsrv_query($conn, $staffQuery, $staffParams);
+
+                if ($staffResult !== false) {
+                    // Fetch staff details
+                    $staffRow = sqlsrv_fetch_array($staffResult, SQLSRV_FETCH_ASSOC);
+                    $surname = $staffRow['SURNAME'];
+                    $firstname = $staffRow['FIRSTNAME'];
+                    $middlename = $staffRow['MIDDLENAME'];
+                    $stafffname = $surname . ' ' . $firstname;
+                    $staffname = $surname . ' ' . $firstname . ' ' . $middlename;
+
+                    // Display staff name
+                    echo "<td>$stafffname</td>";
+                } else {
+                    echo "Error fetching staff details: " . print_r(sqlsrv_errors(), true);
+                }
 
                 // Encode data for URL
                 $encoded_staffname = base64_encode($staffname);
@@ -252,38 +155,19 @@ if (!empty($walletQuery)) {
                 // Construct link
                 $link = "view.php?staffid=$encoded_staffid&staffname=$encoded_staffname&seat_no=$encoded_seat_no&ticket_type=$encoded_ticket_type&booking_date=$encoded_booking_date&description=$encoded_description&amount=$encoded_amount";
                 echo '<td><a href="' . $link . '"><button>View Details</button></a></td>';
-                
+
                 echo '</tr>';
             }
-        } else {
-            echo "Error fetching staff details: " . print_r(sqlsrv_errors(), true);
-        }
+            ?>
+            </tbody>
+        </table>
+    </div>
 
-        echo '</tbody>';
-        echo '</table>';
-        echo '</div>';
-    } else {
-        // Display message if no records found
-        echo "No records found for staff ID: $staffy.";
-    }
-} else {
-    // Display error message if 'walletQuery' is empty
-    echo "Error: No 'staffid' parameter provided.";
-}
-?>
-
-
-
-
-                                
-        
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
 <script>
     $(document).ready(function() {
-        $('#myTable').DataTable({
-            responsive: true
-        });
+        $('#myTable').DataTable();
     });
 </script>
 

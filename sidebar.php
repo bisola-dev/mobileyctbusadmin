@@ -78,7 +78,7 @@
         echo '<li><a href="Addroute.php">Add Route</a></li>';
               } ?>
             <li><a href="viewtransc.php">View all Wallet Transaction</a></li>
-            <li><a href="viewbooking.php">View all Booking</a></li>
+            <li><a href="viewbooking.php">View all Bookings</a></li>
             <li><a href="viewroute.php">View all routes</a></li>
             <li><a href="logout.php">Logout</a></li>
         </ul>
