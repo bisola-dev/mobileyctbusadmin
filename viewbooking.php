@@ -38,6 +38,7 @@ if ($allTransactionsResult === false) {
         .container {
             width: 80%; /* Adjusted width */
             margin: 20px auto; /* Center container */
+            margin-left:15%; /* Push content to the right */
             display: flex;
             justify-content: flex-end; /* Shift content to the right */
             flex-direction: column; /* Align items in a column */
