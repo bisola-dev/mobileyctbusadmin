@@ -229,7 +229,7 @@ if (sqlsrv_has_rows($walletResult)) {
         echo "<td>" . $row['staffid'] . "</td>";
         echo "<td>₦" . $row['amount'] . "</td>";
         echo "<td>" . $row['remita_rrr'] . "</td>";
-        echo "<td>" . $row['trans_date']->format('Y-m-d') . "</td>";
+        echo "<td>" . $row['trans_date']->format('Y-m-d H:i:s') . "</td>";
         echo "</tr>";
     }
     echo "</tbody>";
