@@ -126,6 +126,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background-color: #008000;
             color: #fff;
         }
+
+         /* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    table {
+        font-size: 12px; /* Decrease font size for smaller screens */
+        width: 100%; /* Ensure table fills the container */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        display: block; /* Ensure table behaves like a block element */
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    .container {
+        padding: 4px; /* Reduce padding for smaller screens */
+    }
+}
+
     </style>
 </head>
 <body>
@@ -179,6 +199,7 @@ if (isset($transData) && !empty($transData)) {
     echo '<thead>';
     echo '<tr>';
     echo '<th>Staff ID</th>';
+    echo '<th>Ticket Type</th>';
     echo '<th>Seat Number</th>';
     echo '<th>Booking Date</th>';
     echo '<th>Route Description</th>';
@@ -191,7 +212,8 @@ if (isset($transData) && !empty($transData)) {
     foreach ($transData as $row) {
         echo '<tr>';
         echo '<td>' . $row['staffid'] . '</td>';
-        echo '<td>' . $row['ticket_type'] . ' ' . $row['seat_no'] . '</td>';
+        echo '<td>' . $row['ticket_type'] . '</td>';
+        echo '<td>'  . $row['seat_no'] . '</td>';
         echo '<td>' . $row['booking_date']->format('Y-m-d') . '</td>';
         echo '<td>';
 
@@ -272,11 +294,12 @@ if (isset($transData) && !empty($transData)) {
 </script>
 
 <script>
-    $(document).ready(function() {
-        $('#myTable').DataTable({
-            responsive: true
-        });
+$(document).ready(function() {
+    $('#myTable').DataTable({
+        responsive: true,
+        "order": [[ 2, 'asc' ]] // Sort by the second column (index 1) in ascending order
     });
+});
 
     $(function() {
         $("#date").datepicker({ dateFormat: 'yy-mm-dd' });

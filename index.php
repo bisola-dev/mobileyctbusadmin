@@ -164,7 +164,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     font-weight: bold; /* Make the font bold */
     font-size: 0.8em; /* Adjust the font size */
 }
+   /* Responsive adjustments */
+   @media screen and (max-width: 768px) {
+            table {
+                font-size: 12px; /* Decrease font size for smaller screens */
+            }
 
+            .container {
+                padding: 4px; /* Reduce padding for smaller screens */
+            }
+        }
     </style>
 </head>
 <body>

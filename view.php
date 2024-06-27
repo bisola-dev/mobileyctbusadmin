@@ -102,6 +102,16 @@ function generateQRCode($bookingDetails, $fileName) {
                 display: none;
             }
         }
+           /* Responsive adjustments */
+           @media screen and (max-width: 768px) {
+            table {
+                font-size: 12px; /* Decrease font size for smaller screens */
+            }
+
+            .container {
+                padding: 4px; /* Reduce padding for smaller screens */
+            }
+        }
     </style>
 </head>
 <body>

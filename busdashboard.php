@@ -61,7 +61,16 @@ if(isset($_SESSION['USERNAME']) && isset($_SESSION['ROLEZ'])) {
             padding: 20px;
         }
         
-        
+           /* Responsive adjustments */
+           @media screen and (max-width: 768px) {
+            table {
+                font-size: 12px; /* Decrease font size for smaller screens */
+            }
+
+            .container {
+                padding: 4px; /* Reduce padding for smaller screens */
+            }
+        }
     </style>
 </head>
 <body>
