@@ -63,6 +63,13 @@ if(isset($_SESSION['USERNAME']) && isset($_SESSION['ROLEZ'])) {
         
            /* Responsive adjustments */
            @media screen and (max-width: 768px) {
+
+            #sidebar {
+                width: 100px; /* Adjusted sidebar width for mobile */
+            }
+            #content {
+                margin-left: 80px; /* Adjusted content margin for mobile */
+            }
             table {
                 font-size: 12px; /* Decrease font size for smaller screens */
             }
